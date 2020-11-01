@@ -1,0 +1,72 @@
+:toc:
+:numbered:
+
+== Ansible Playbook for deploying k8s 
+
+In this repo, i will show you how to automated installing k8s on multi node using kubeadm. Before using this ansible playbook, make sure that: 
+
+* You have configured an IP Address
+* You have configured SSH permission for root
+* You have configured SSH less password for root
+* Configure Hostname, Hosts on each node (master and worker)
+* Instal ansible on your PC/Laptop 
+* make sure you have input your hosts to ansible hosts in /etc/ansible/hosts
+
+=== example /etc/hosts
+
+```bash
+127.0.0.1	localhost
+192.168.5.11	k8s-master.dhenandi.com		k8s-master
+192.168.5.12	k8s-node1.dhenandi.com		k8s-node1
+192.168.5.13	k8s-node2.dhenandi.com		k8s-node2
+```
+
+=== example command for set hostname
+
+```bash
+hostnamectl set-hostname k8s-master.dhenandi.com
+```
+
+=== example for /etc/ansible/hosts
+
+```bash
+[master]
+master ansible_host=192.168.5.11
+
+[node]
+node1 ansible_host=192.168.5.12
+node2 ansible_host=192.168.5.13
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+```
+
+== How to Run this Playbook
+
+* Create an user with sudo access and less password when sudo with first playbook _1-initialize-user.yml_.
+
+```bash 
+ansible-playbook 1-initialize-user.yml
+```
+
+* Install dependencies for k8s, such as docker, kubelet, kubeadm, etc
+
+```bash
+ansible-playbook 2-install-dependencies.yml
+```
+
+* Provision for master nodes and join on worker nodes
+
+```bash
+ansible-playbook 3-provisioning-k8s.yml
+```
+
+== After Run Playbook
+
+```bash
+dhenandi@k8s-master:~$ kubectl get nodes
+NAME                     STATUS   ROLES    AGE     VERSION
+k8s-master               Ready    master   8m51s   v1.15.3
+k8s-node1.dhenandi.com   Ready    <none>   8m7s    v1.15.3
+k8s-node2                Ready    <none>   8m7s    v1.15.3
+```
